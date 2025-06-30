@@ -8,10 +8,10 @@ M.config = {
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
 
   signs = {
-    context  = "∙", context_hl  = "DiagnosticInfo",
-    add      = "+", add_hl      = "DiffAdd",
-    delete   = "-", delete_hl   = "DiffDelete",
-    accepted = "✓", accepted_hl = "DiagnosticOk"
+    context  = "∙",
+    add      = "+",
+    delete   = "-",
+    accepted = "✓",
   },
 
   keymaps = {
@@ -28,7 +28,7 @@ function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
   local signs = M.config.signs
-  vim.fn.sign_define("claude_context", { text = signs.context, texthl = signs.context_hl })
+  vim.fn.sign_define("claude_context", { text = signs.context, texthl = "DiagnosticInfo" })
 
   local keymaps = M.config.keymaps
   vim.keymap.set('v', keymaps.ask,    M.ask)

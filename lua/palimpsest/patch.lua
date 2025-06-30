@@ -59,25 +59,25 @@ end
 
 local function update_signs()
   vim.fn.sign_unplace('palimpsest_patch')
+  vim.api.nvim_buf_clear_namespace(state.buf, -1, 0, -1) -- clear highlights
 
   for i, line in ipairs(state.lines) do
     if line.type == 'Add' or line.type == 'Delete' then
       local sign_type = state.accepted[i] and 'Accepted' or line.type
       vim.fn.sign_place(0, 'palimpsest_patch', sign_type, state.buf, { lnum = line.buf_idx })
+      
+      local hl_group = line.type == 'Add' and 'DiffAddLine' or 'DiffDeleteLine'
+      vim.api.nvim_buf_add_highlight(state.buf, -1, hl_group, line.buf_idx - 1, 0, -1)
     end
   end
 end
 
 local function mark(bool)
-  local first, final
+  local first, final = vim.fn.line('.'), vim.fn.line('.')
   if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
     first = vim.fn.line('v')
-    final = vim.fn.line('.')
-    first, final = math.min(first, final), math.max(first, final)
-  else
-    first = vim.fn.line('.')
-    final = first
   end
+  first, final = math.min(first, final), math.max(first, final)
 
   for i = first, final do
     local idx = i - state.start_idx + 1
@@ -111,6 +111,7 @@ local function finalize()
   vim.api.nvim_buf_set_lines(state.buf, s - 1, e, false, {})
 
   vim.fn.sign_unplace('palimpsest_patch')
+  vim.api.nvim_buf_clear_namespace(state.buf, -1, 0, -1) -- clear highlights
 end
 
 function M.review(original_lines, new_lines, start_idx, end_line)
@@ -129,9 +130,9 @@ function M.setup(config)
   local signs = config.signs
   local keymaps = config.keymaps
   
-  vim.fn.sign_define('Add',      { text = signs.add,      texthl = signs.add_hl      })
-  vim.fn.sign_define('Delete',   { text = signs.delete,   texthl = signs.delete_hl   })
-  vim.fn.sign_define('Accepted', { text = signs.accepted, texthl = signs.accepted_hl })
+  vim.fn.sign_define('Add',      { text = signs.add,      texthl = "DiffAdd"        })
+  vim.fn.sign_define('Delete',   { text = signs.delete,   texthl = "DiffDelete"     })
+  vim.fn.sign_define('Accepted', { text = signs.accepted, texthl = "DiagnosticInfo" })
 
   vim.keymap.set({'v', 'n'}, keymaps.accept,   function() mark(true)  end)
   vim.keymap.set({'v', 'n'}, keymaps.decline,  function() mark(false) end)

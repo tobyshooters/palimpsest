@@ -17,6 +17,10 @@ A dead-simple Claude interface for Neovim.
    embedded in a powerful text editor.
 4. Allows for easy "folk tools" along the lines of the Acme text editor by
    toggling lines in and out of context with ease, akin to incantations.
+5. Simple patch review mode with inline diffs.
+
+
+### Configuation
 
 ```lua
 require('palimpsest').setup({
@@ -28,10 +32,10 @@ require('palimpsest').setup({
   
   -- Display of context and line-by-line diff markers
   signs = {
-    context  = "∙", context_hl  = "DiagnosticInfo",
-    add      = "+", add_hl      = "DiffAdd",
-    delete   = "-", delete_hl   = "DiffDelete",
-    accepted = "✓", accepted_hl = "DiagnosticOk"
+    context  = "∙",
+    add      = "+",
+    delete   = "-",
+    accepted = "✓",
   },
   
   keymaps = {
@@ -46,4 +50,14 @@ require('palimpsest').setup({
     finalize = "<leader>cf"   -- finalize review
   }
 })
+```
+
+### Highlighting
+
+```
+hi DiagnosticInfo cterm=none ctermfg=4         ctermbg=none
+hi DiffAdd        cterm=none ctermfg=DarkGreen ctermbg=none
+hi DiffAddLine    cterm=none ctermfg=none      ctermbg=LightGreen
+hi DiffDelete     cterm=none ctermfg=DarkRed   ctermbg=none
+hi DiffDeleteLine cterm=none ctermfg=none      ctermbg=LightRed
 ```
