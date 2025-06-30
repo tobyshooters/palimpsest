@@ -1,49 +1,40 @@
 local M = {}
 
--- Inject sibling modules
 M.patch = require('palimpsest.patch')
 
 M.config = {
   api_key = os.getenv("ANTHROPIC_API_KEY"),
   model = "claude-3-5-sonnet-latest",
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
+
   signs = {
-    context = "∙",
-    context_hl = "DiagnosticInfo",
-    add = "+",
-    add_hl = "DiffAdd",
-    delete = "-",
-    delete_hl = "DiffDelete",
-    equals = " ",
-    equals_hl = "Comment",
-    accepted = "✓",
-    accepted_hl = "DiagnosticOk"
+    context  = "∙", context_hl  = "DiagnosticInfo",
+    add      = "+", add_hl      = "DiffAdd",
+    delete   = "-", delete_hl   = "DiffDelete",
+    accepted = "✓", accepted_hl = "DiagnosticOk"
   },
+
   keymaps = {
-    ask = "<leader>c",
-    diff = "<leader>r",
-    mark = "<leader>m",
-    accept = "<leader>a",
-    reject = "<leader>d",
-    finalize = "<leader>f"
+    mark     = "<leader>cm",  -- add line to context
+    ask      = "<leader>cc",  -- ask visually selected question, append response
+    review   = "<leader>cr",  -- ask visually selected question, review response diff 
+    accept   = "<leader>ca",  -- accept diff proposal
+    decline  = "<leader>cd",  -- decline diff proposal
+    finalize = "<leader>cf"   -- finalize review
   }
 }
 
 function M.setup(opts)
-  -- Initialize plugin with optional user config
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
-  vim.fn.sign_define("claude_context", {
-    text = M.config.signs.context,
-    texthl = M.config.signs.context_hl
-  })
+  local signs = M.config.signs
+  vim.fn.sign_define("claude_context", { text = signs.context, texthl = signs.context_hl })
 
-  -- Setup key bindings
-  vim.keymap.set('v', M.config.keymaps.ask, M.ask)
-  vim.keymap.set('v', M.config.keymaps.diff, function() M.ask('diff') end)
-  vim.keymap.set('v', M.config.keymaps.mark, M.mark)
+  local keymaps = M.config.keymaps
+  vim.keymap.set('v', keymaps.ask,    M.ask)
+  vim.keymap.set('v', keymaps.review, function() M.ask('review') end)
+  vim.keymap.set('v', keymaps.mark,   M.mark)
   
-  -- Setup patch module
   M.patch.setup(M.config)
 end
 
@@ -159,16 +150,12 @@ function M.ask(mode)
         if ok and parsed.content and parsed.content[1] then
           local claude_lines = vim.split(parsed.content[1].text, "\n")
 
-          -- Append mode
           if mode == 'append' then
             vim.fn.append(final, claude_lines)
-
-          -- Patch mode
-          elseif mode == 'diff' then
+          elseif mode == 'review' then
             local original_lines = vim.split(selection, "\n")
-            M.patch.review_patch(original_lines, claude_lines, first, final)
+            M.patch.review(original_lines, claude_lines, first, final)
           end
-
         else
           vim.notify("Error with Claude: " .. response)
         end

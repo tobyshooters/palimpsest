@@ -1,4 +1,4 @@
-## Palimpsest
+# Palimpsest
 
 ![demo](https://raw.githubusercontent.com/tobyshooters/palimpsest/master/assets/translate.gif)
 
@@ -26,16 +26,24 @@ require('palimpsest').setup({
   model = "claude-3-5-sonnet-latest",
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
   
-  -- Visual display of context markers
+  -- Display of context and line-by-line diff markers
   signs = {
-    context = "∙",
-    highlight = "DiagnosticInfo"
+    context  = "∙", context_hl  = "DiagnosticInfo",
+    add      = "+", add_hl      = "DiffAdd",
+    delete   = "-", delete_hl   = "DiffDelete",
+    accepted = "✓", accepted_hl = "DiagnosticOk"
   },
   
-  -- Keymap for marking context and querying
   keymaps = {
-    mark = "<leader>m",
-    ask = "<leader>c",
+    -- Keymaps for core functionality
+    ask      = "<leader>cc",  -- ask visually selected question, append response
+    mark     = "<leader>cm",  -- add line to context
+    
+    -- Keymaps for patch review using diffs
+    review   = "<leader>cr",  -- ask visually selected question, review response diff 
+    accept   = "<leader>ca",  -- accept diff proposal
+    decline  = "<leader>cd",  -- decline diff proposal
+    finalize = "<leader>cf"   -- finalize review
   }
 })
 ```
