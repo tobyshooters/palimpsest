@@ -24,23 +24,11 @@ M.config = {
   }
 }
 
-function M.setup(opts)
-  M.config = vim.tbl_deep_extend("force", M.config, opts or {})
-
-  local signs = M.config.signs
-  vim.fn.sign_define("claude_context", { text = signs.context, texthl = "DiagnosticInfo" })
-
-  local keymaps = M.config.keymaps
-  vim.keymap.set('v', keymaps.ask,    M.ask)
-  vim.keymap.set('v', keymaps.review, function() M.ask('review') end)
-  vim.keymap.set('v', keymaps.mark,   M.mark)
-  
-  M.patch.setup(M.config)
-end
-
-local function get_visual_selection()
-  local first = vim.fn.line('v')
-  local final = vim.fn.line('.')
+local function get_selection()
+  local first, final = vim.fn.line('.'), vim.fn.line('.')
+  if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
+    first = vim.fn.line('v')
+  end
   return math.min(first, final), math.max(first, final)
 end
 
@@ -57,7 +45,7 @@ end
 
 function M.mark()
   -- Mark visually selected lines of code as context
-  local first, final = get_visual_selection()
+  local first, final = get_selection()
   local bufnr = vim.api.nvim_get_current_buf()
 
   local has_signs = false
@@ -116,7 +104,7 @@ function M.ask(mode)
   end
 
   -- Combine visual selection with context blocks
-  local first, final = get_visual_selection()
+  local first, final = get_selection()
   local lines = vim.fn.getline(first, final)
   local selection = table.concat(lines, "\n")
 
@@ -162,6 +150,20 @@ function M.ask(mode)
       end
     end
   })
+end
+
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+
+  local signs = M.config.signs
+  vim.fn.sign_define("claude_context", { text = signs.context, texthl = "DiagnosticInfo" })
+
+  local keymaps = M.config.keymaps
+  vim.keymap.set({'v', 'n'}, keymaps.ask,    M.ask)
+  vim.keymap.set({'v', 'n'}, keymaps.review, function() M.ask('review') end)
+  vim.keymap.set({'v', 'n'}, keymaps.mark,   M.mark)
+  
+  M.patch.setup(M.config)
 end
 
 return M

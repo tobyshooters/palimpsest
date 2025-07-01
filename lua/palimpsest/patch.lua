@@ -80,7 +80,7 @@ local function mark(bool)
   first, final = math.min(first, final), math.max(first, final)
 
   for i = first, final do
-    local idx = i - state.start_idx + 1
+    local idx = i - state.start_idx + 1 -- offset relative to buffer start
     state.accepted[idx] = bool
   end
 
