@@ -3,8 +3,7 @@ local M = {}
 M.patch = require('palimpsest.patch')
 
 M.config = {
-  api_key = os.getenv("ANTHROPIC_API_KEY"),
-  model = "claude-3-5-sonnet-latest",
+  model = "anthropic/claude-3-5-sonnet-latest",
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
 
   signs = {
@@ -98,11 +97,6 @@ end
 function M.ask(mode)
   mode = mode or 'append'
 
-  if not M.config.api_key then
-    vim.notify("ANTHROPIC_API_KEY missing", vim.log.levels.ERROR)
-    return
-  end
-
   -- Combine visual selection with context blocks
   local first, final = get_selection()
   local lines = vim.fn.getline(first, final)
@@ -111,45 +105,23 @@ function M.ask(mode)
   local contexts = collect()
   local content = contexts .. selection
 
-  vim.notify("Querying Claude...")
+  -- What is this?
+  vim.notify("Querying " .. M.config.model .. "...")
 
-  -- Send off to Anthropic
-  local curl_cmd = {
-    "curl", "-s", "-X", "POST",
-    "https://api.anthropic.com/v1/messages",
-    "-H", "content-type: application/json",
-    "-H", "anthropic-version: 2023-06-01",
-    "-H", "x-api-key: " .. M.config.api_key,
-    "-d", vim.json.encode({
-      model = M.config.model,
-      max_tokens = 1024,
-      system = M.config.system,
-      messages = {{ role = "user", content = content }}
-    })
+  local cmd = {
+    "llm", "--no-stream",
+    "-m", M.config.model,
+    "-s", M.config.system
   }
+  local result = vim.system(cmd, { stdin = content, text = true }):wait()
+  local claude_lines = vim.split(result.stdout, "\n")
 
-  -- Place output after visual buffer
-  vim.fn.jobstart(curl_cmd, {
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      if data then
-        local response = table.concat(data, "")
-        local ok, parsed = pcall(vim.json.decode, response)
-        if ok and parsed.content and parsed.content[1] then
-          local claude_lines = vim.split(parsed.content[1].text, "\n")
-
-          if mode == 'append' then
-            vim.fn.append(final, claude_lines)
-          elseif mode == 'review' then
-            local original_lines = vim.split(selection, "\n")
-            M.patch.review(original_lines, claude_lines, first, final)
-          end
-        else
-          vim.notify("Error with Claude: " .. response)
-        end
-      end
-    end
-  })
+  if mode == 'append' then
+    vim.fn.append(final, claude_lines)
+  elseif mode == 'review' then
+    local original_lines = vim.split(selection, "\n")
+    M.patch.review(original_lines, claude_lines, first, final)
+  end
 end
 
 function M.setup(opts)
