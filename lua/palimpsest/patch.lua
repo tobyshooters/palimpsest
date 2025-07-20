@@ -1,10 +1,12 @@
+local utils = require('palimpsest.utils')
+
 local M = {}
 
 local state = {
-  buf       = 0,  -- a reference to the Vim buffer
-  start_idx = 0,  -- where the target selection starts
-  lines     = {}, -- the patch lines and types (e.g. Add, Delete)
-  accepted  = {}, -- toggle whether lines are accepted
+  buf       = nil, -- a reference to the Vim buffer
+  start_idx = 0,   -- where the target selection starts
+  lines     = {},  -- the patch lines and types (e.g. Add, Delete)
+  accepted  = {},  -- toggle whether lines are accepted
 }
 
 local function compute_diff(original_lines, new_lines)
@@ -73,12 +75,11 @@ local function update_signs()
 end
 
 local function mark(bool)
-  local first, final = vim.fn.line('.'), vim.fn.line('.')
-  if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
-    first = vim.fn.line('v')
+  if not state.buf then
+    return
   end
-  first, final = math.min(first, final), math.max(first, final)
-
+  
+  first, final = utils.get_selection()
   for i = first, final do
     local idx = i - state.start_idx + 1 -- offset relative to buffer start
     state.accepted[idx] = bool
@@ -88,6 +89,10 @@ local function mark(bool)
 end
 
 local function finalize()
+  if not state.buf then
+    return
+  end
+  
   -- Tally lines that must be removed
   local indices = {}
   for i, line in ipairs(state.lines) do
@@ -112,6 +117,9 @@ local function finalize()
 
   vim.fn.sign_unplace('palimpsest_patch')
   vim.api.nvim_buf_clear_namespace(state.buf, -1, 0, -1) -- clear highlights
+  
+  -- Clear the buffer reference
+  state.buf = nil
 end
 
 function M.review(original_lines, new_lines, start_idx, end_line)

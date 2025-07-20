@@ -1,9 +1,10 @@
+local utils = require('palimpsest.utils')
+local patch = require('palimpsest.patch')
+
 local M = {}
 
-M.patch = require('palimpsest.patch')
-
 M.config = {
-  model = "anthropic/claude-3-5-sonnet-latest",
+  model = "anthropic/claude-3-haiku-20240307",
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
 
   signs = {
@@ -23,14 +24,6 @@ M.config = {
   }
 }
 
-local function get_selection()
-  local first, final = vim.fn.line('.'), vim.fn.line('.')
-  if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
-    first = vim.fn.line('v')
-  end
-  return math.min(first, final), math.max(first, final)
-end
-
 local sign_id = 1
 
 local function get_sign(bufnr, lnum)
@@ -44,7 +37,7 @@ end
 
 function M.mark()
   -- Mark visually selected lines of code as context
-  local first, final = get_selection()
+  local first, final = utils.get_selection()
   local bufnr = vim.api.nvim_get_current_buf()
 
   local has_signs = false
@@ -98,7 +91,7 @@ function M.ask(mode)
   mode = mode or 'append'
 
   -- Combine visual selection with context blocks
-  local first, final = get_selection()
+  local first, final = utils.get_selection()
   local lines = vim.fn.getline(first, final)
   local selection = table.concat(lines, "\n")
 
@@ -120,7 +113,7 @@ function M.ask(mode)
     vim.fn.append(final, claude_lines)
   elseif mode == 'review' then
     local original_lines = vim.split(selection, "\n")
-    M.patch.review(original_lines, claude_lines, first, final)
+    patch.review(original_lines, claude_lines, first, final)
   end
 end
 
@@ -135,7 +128,7 @@ function M.setup(opts)
   vim.keymap.set({'v', 'n'}, keymaps.review, function() M.ask('review') end)
   vim.keymap.set({'v', 'n'}, keymaps.mark,   M.mark)
   
-  M.patch.setup(M.config)
+  patch.setup(M.config)
 end
 
 return M

@@ -66,8 +66,7 @@ highlight DiffDeleteLine cterm=none ctermfg=none      ctermbg=LightRed
 ### To Do
 
 1. [bug] check for bug in indexing between patch.accepted and patch.lines
-3. [bug] ignore diff commands if not in `cr` mode
-5. [polish] unify selection code between init.lua and patch.lua
-4. [feature] make loading state more apparent, perhaps with sign
-7. [feature] support two models (fast vs quality) and figure out good key bindings for this
-8. [feature] add numbered macros/markers to support concurrent "tools" throughout the file
+1. [feature] make loading state more apparent, perhaps with sign
+1. [feature] support two models (fast vs quality) and figure out good key bindings for this
+1. [feature] add numbered macros/markers to support concurrent "tools" throughout the file
+1. [feature] stream in output for more immediate feedback
