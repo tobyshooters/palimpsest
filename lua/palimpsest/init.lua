@@ -101,13 +101,12 @@ function M.ask(mode)
   -- What is this?
   vim.notify("Querying " .. M.config.model .. "...")
 
-  local cmd = {
-    "llm", "--no-stream",
-    "-m", M.config.model,
-    "-s", M.config.system
-  }
-  local result = vim.system(cmd, { stdin = content, text = true }):wait()
-  local claude_lines = vim.split(result.stdout, "\n")
+  local cmd = string.format("llm prompt --no-stream -m %s -s %s",
+                            vim.fn.shellescape(M.config.model),
+                            vim.fn.shellescape(M.config.system))
+
+  local result = vim.fn.system(cmd, content)
+  local claude_lines = vim.split(result, "\n")
 
   if mode == 'append' then
     vim.fn.append(final, claude_lines)
