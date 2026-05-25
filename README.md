@@ -1,13 +1,13 @@
 # Palimpsest
 
-![demo](https://raw.githubusercontent.com/tobyshooters/palimpsest/master/assets/translate.gif)
-
 A dead-simple LLM interface for Neovim.
 
-Palimpsest is an alternative way to interact with LLMs, countering the chat paradigm by
-dissolving the distinction between user and clanker. Instead, it focuses on a shared 
-material substrate, the text buffer. If not immediately apparent, this is influenced by 
-the Plan9 Acme text editor.
+![Demo video](https://raw.githubusercontent.com/tobyshooters/palimpsest/master/assets/translate.gif)
+
+**Palimpsest** is an alternative way to interact with LLMs, dissolving the
+distinction between user and clanker which is presumed in the chat paradigm.
+Instead, it focuses on a shared material substrate, the text buffer. If not
+immediately apparent, this is influenced by the Plan9 Acme text editor.
 
 1. Built atop of `simonw/llm`, allowing user to configure their own API keys or
    local models independently.
