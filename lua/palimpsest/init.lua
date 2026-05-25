@@ -4,7 +4,7 @@ local patch = require('palimpsest.patch')
 local M = {}
 
 M.config = {
-  model = "anthropic/claude-3-haiku-20240307",
+  model = "anthropic/claude-sonnet-4-5",
   system = "Be concise and direct in your responses. Respond without unnecessary explanation.",
 
   signs = {
