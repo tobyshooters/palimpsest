@@ -5,7 +5,7 @@ A dead-simple LLM interface for Neovim.
 ![Demo video](https://raw.githubusercontent.com/tobyshooters/palimpsest/master/assets/translate.gif)
 
 **Palimpsest** is an alternative way to interact with LLMs, dissolving the
-distinction between user and clanker which is presumed in the chat paradigm.
+distinction between user and clanker that is presumed in the chat paradigm.
 Instead, it focuses on a shared material substrate, the text buffer. If not
 immediately apparent, this is influenced by the Plan9 Acme text editor.
 
